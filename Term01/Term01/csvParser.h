@@ -1,3 +1,4 @@
+#pragma once
 #include <stdio.h>
 #define STATION_NUM 332
 
@@ -19,12 +20,14 @@ int Parse(Station stations[]) {
 					&stations[i].name, 
 					&stations[i].spacing, 
 					&stations[i].spacingSum);
+				/*
 				printf("%3d: %d, %-35s, %3.1f, %3.1f\n", 
 					i,
 					stations[i].line, 
 					stations[i].name, 
 					stations[i].spacing, 
 					stations[i].spacingSum);
+					*/
 			}
 		}
 	}
