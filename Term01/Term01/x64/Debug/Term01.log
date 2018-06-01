@@ -1,9 +1,0 @@
-﻿  main.c
-d:\projects\dsterm\term01\term01\csvparser.h(47): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\stdio.h(1197): note: 'fscanf' 선언을 참조하십시오.
-d:\projects\dsterm\term01\term01\csvparser.h(79): warning C4996: 'fscanf': This function or variable may be unsafe. Consider using fscanf_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\stdio.h(1197): note: 'fscanf' 선언을 참조하십시오.
-d:\projects\dsterm\term01\term01\csvparser.h(70): warning C4101: 'string' :참조되지 않은 지역 변수입니다.
-d:\projects\dsterm\term01\term01\gui.h(56): warning C4996: 'getch': The POSIX name for this item is deprecated. Instead, use the ISO C and C++ conformant name: _getch. See online help for details.
-  c:\program files (x86)\windows kits\10\include\10.0.17134.0\ucrt\conio.h(453): note: 'getch' 선언을 참조하십시오.
-  Term01.vcxproj -> D:\Projects\DSTerm\Term01\x64\Debug\Term01.exe
