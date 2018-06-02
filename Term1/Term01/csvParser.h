@@ -41,9 +41,12 @@ int CodeToIndex(char code[]) {
 int Parse(Station stations[]) {
 	FILE* fp;
 	fopen_s(&fp, "testdata.csv", "rb");
+
+	stations[0].line = 0;
+	stations[0].spacing = 0.0;
 	if (fp != NULL) {	
 		while (!feof(fp)) {	
-			for (int i = 0; i < STATION_NUM; i++) {
+			for (int i = 1; i <= STATION_NUM; i++) {
 				fscanf(fp, "%[^,],%d,%[^,],%lf\n", 
 					&stations[i].code,
 					&stations[i].line, 
@@ -76,7 +79,7 @@ void TransferParse(double weight[STATION_NUM][STATION_NUM]) {
 		for (int i = 0; i < 93; i++) {
 			char s1[10];
 			char s2[10];
-			fscanf(fp, "%[^,],%[^,]\n", s1, s2);
+			fscanf(fp, "%[^,],%[^\n]\n", s1, s2);
 			i1 = CodeToIndex(s1);
 			i2 = CodeToIndex(s2);
 			weight[i1][i2] = 5.0;
