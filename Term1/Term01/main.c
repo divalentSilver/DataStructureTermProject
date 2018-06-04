@@ -19,12 +19,14 @@ void Dijkstra(int, int, int, int[], int[], Path[]);
 Station stations[STATION_NUM + 1];
 double weight[STATION_NUM + 1][STATION_NUM + 1];
 
-
 int main(void) {
+	int arr[20][20];
 	Parse(stations);
 	InitGraph();
+	TransferParse(weight, stations);
 	//InitGUI();
 	//Title();
+	
 	Path p;
 	p = FindPath(102, 276);//신촌 안암
 	for (int i = 0; i < p.num; i++) {
@@ -38,7 +40,6 @@ void InitGraph() {
 		for (j = 0; j <= STATION_NUM; j++)
 			weight[i][j] = i == j ? 0 : INF;
 	}
-	TransferParse(weight);
 	for (i = 1; i <= STATION_NUM; i++) {
 		if (i == 63	||	//2호선 시청
 			i == 106||	//2호선 성수지선 용답

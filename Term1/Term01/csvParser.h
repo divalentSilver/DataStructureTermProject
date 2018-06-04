@@ -52,14 +52,14 @@ int Parse(Station stations[]) {
 					&stations[i].line, 
 					&stations[i].name, 
 					&stations[i].spacing);
-				
+				/*
 				printf("%3d: %-6s %d, %-35s, %3.1f\n", 
 					i,
 					stations[i].code,
 					stations[i].line, 
 					stations[i].name, 
 					stations[i].spacing);
-					
+				*/
 			}
 		}
 	}
@@ -68,7 +68,7 @@ int Parse(Station stations[]) {
 	return 0;
 }
 
-void TransferParse(double weight[STATION_NUM][STATION_NUM]) {
+void TransferParse(double weight[STATION_NUM + 1][STATION_NUM + 1], Station stations[]) {
 	FILE *fp;
 	char string[10];
 	fopen_s(&fp, "transfer.csv", "rb");
