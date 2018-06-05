@@ -5,6 +5,13 @@
 #include "Util.h"
 
 #define INF 10000
+#define _A 65 //키보드 입력값
+#define _a 97
+#define _D 68
+#define _d 100
+#define _p 112
+#define _P 80 
+#define ESC 27
 
 typedef struct _path {
 	int num;
@@ -12,11 +19,29 @@ typedef struct _path {
 	double dist;
 }Path;
 
+typedef struct _StationListNode {//즐겨찾기 리스트 노드 구조체
+	Station station;
+	struct _StationListNode * link;
+}StationListNode;
+
+typedef struct {//즐겨찾기 리스트 구조체
+	StationListNode * head;
+	int length;
+}StationList;
+
 void InitGraph();
 int choose(int, int[], int[]);
 Path FindPath(int, int);
 void Dijkstra(int, int, int, int[], int[], Path[]);
 int search(char*);
+void insert_node(StationListNode ** phead, StationListNode * p, StationListNode * new_node);
+void remove_node(StationListNode ** phead, StationListNode * p, StationListNode * remove);
+int is_empty(StationList * list);
+StationListNode * get_node_at(StationList * list, int position);
+void InitializeList(StationList * list);
+void AddStation(StationList * list, Station station);
+void RemoveStation(StationList * list, int position);
+void DisplayList(StationList * list);
 
 Station stations[STATION_NUM + 1];
 double weight[STATION_NUM + 1][STATION_NUM + 1];
@@ -44,7 +69,46 @@ int main(void) {
 		printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
 	}
 
-
+	//-----------------------------------즐겨찾기 기능
+	StationList favorites;
+	InitializeList(&favorites);
+	int key = 0;
+	char input[100];
+	int target;
+	int position;
+	printf("\nA/a: 즐겨찾는 역 추가\nD/d: 즐겨찾는 역 삭제\nP/p: 즐겨찾기 리스트 출력\nEsc: 프로그램 종료\n원하는 기능의 버튼을 누르세요.\n");
+	while (1) {//추후에 GUI로 버튼 기능 이용하여 구현할 것
+		if (_kbhit()) {
+			key = _getch();
+			switch (key) {
+			case _A:
+			case _a:
+				printf("\n즐겨찾기에 추가할 역을 검색하세요: ");
+				scanf("%100s", input);
+				target = search(input); //예외처리필요
+				printf("%d\n", target);
+				AddStation(&favorites, stations[target]);
+				printf("%s역이 즐겨찾기에 추가되었습니다.\n\n", stations[target].name);
+				break;
+			case _D:
+			case _d:
+				printf("\n삭제할 역의 번호를 입력하세요: ");
+				scanf("%d", &position);
+				RemoveStation(&favorites, position - 1);
+				break;
+			case _P:
+			case _p:
+				printf("\n_______즐겨찾기 리스트_______\n");
+				DisplayList(&favorites);
+				printf("____________________________\n");
+				break;
+			case ESC:
+				printf("\n프로그램을 종료합니다.\n");
+				exit(0);
+			}
+		}
+	}
+	//-----------------------------------
 }
 
 int search(char *string) {
@@ -149,5 +213,87 @@ void Dijkstra(int start, int dest, int n, int distance[], int found[], Path path
 					paths[w].path[paths[w].num++] = w;
 					paths[w].dist = distance[w];
 				}
+	}
+}
+
+void insert_node(StationListNode ** phead, StationListNode * p, StationListNode * new_node) {
+	if (*phead == NULL) {
+		new_node->link = NULL;
+		*phead = new_node;
+	}
+	else if (p == NULL) {
+		new_node->link = *phead;
+		*phead = new_node;
+	}
+	else {
+		new_node->link = p->link;
+		p->link = new_node;
+	}
+}
+
+void remove_node(StationListNode** phead, StationListNode* p, StationListNode* remove) {
+	if (p == NULL) {
+		*phead = (*phead)->link;
+	}
+	else {
+		p->link = remove->link;
+	}
+	free(remove);
+}
+
+int is_empty(StationList* list) {
+	if (list->head == NULL) {
+		return 1;
+	}
+	else {
+		return 0;
+	}
+}
+
+StationListNode* get_node_at(StationList* list, int position) {
+	StationListNode* tmp = list->head;
+	if (position < 0) return NULL;
+	for (int i = 0; i < position; i++) {
+		tmp = tmp->link;
+	}
+	return tmp;
+}
+
+void InitializeList(StationList* list) {
+	if (list == NULL) return;
+	list->head = NULL;
+	list->length = 0;
+}
+
+void AddStation(StationList* list, Station station) {
+	int position = list->length;
+	StationListNode* p;
+	StationListNode* node = (StationListNode*)malloc(sizeof(StationListNode));
+	if (node == NULL) printf("memory allocation error\n");
+	node->station = station;
+	p = get_node_at(list, position - 1);
+	insert_node(&list->head, p, node);
+	list->length++;
+	return;
+}
+
+void RemoveStation(StationList* list, int position) {
+	if (!is_empty(list) && (position >= 0) && (position < list->length)) {
+		StationListNode* p = get_node_at(list, position - 1);
+		remove_node(&(list->head), p, (p != NULL) ? p->link : NULL);
+		list->length--;
+	}
+	else {
+		printf("error while removing an item from the list\n");
+		printf("%d", position);
+	}
+}
+
+void DisplayList(StationList* list) {
+	StationListNode* node = list->head;
+	if (is_empty(list)) printf("리스트가 비었습니다.\n");
+	for (int i = 0; i < list->length; i++) {
+		printf("%d.%d호선 %s\n", i + 1, node->station.line, node->station.name);
+		node = node->link;
 	}
 }
