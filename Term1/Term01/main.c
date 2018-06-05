@@ -1,6 +1,8 @@
 #pragma once
 #include "csvParser.h"
 #include "GUI.h"
+#include "TextButton.h"
+#include "Util.h"
 
 #define INF 10000
 
@@ -41,6 +43,8 @@ int main(void) {
 	for (int i = 0; i < p.num; i++) {
 		printf("%dÈ£¼± %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
 	}
+
+
 }
 
 int search(char *string) {
