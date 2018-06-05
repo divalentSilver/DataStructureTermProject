@@ -1,5 +1,4 @@
 #pragma once
-#include <stdio.h>
 #include "csvParser.h"
 #include "GUI.h"
 
@@ -15,23 +14,50 @@ void InitGraph();
 int choose(int, int[], int[]);
 Path FindPath(int, int);
 void Dijkstra(int, int, int, int[], int[], Path[]);
+int search(char*);
 
 Station stations[STATION_NUM + 1];
 double weight[STATION_NUM + 1][STATION_NUM + 1];
 
 int main(void) {
 	int arr[20][20];
+	char str1[100], str2[100];
 	Parse(stations);
 	InitGraph();
 	TransferParse(weight, stations);
 	//InitGUI();
 	//Title();
-	
+	int a, b;
+	printf("출발지를 검색하세요: ");
+	scanf("%100s", str1);
+	a = search(str1);
+
+	printf("도착지를 검색하세요: ");
+	scanf("%100s", str2);
+	b = search(str2);
+
 	Path p;
-	p = FindPath(102, 276);//신촌 안암
+	p = FindPath(a, b);//신촌 안암
 	for (int i = 0; i < p.num; i++) {
 		printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
 	}
+}
+
+int search(char *string) {
+	//Prototype: needs more efficient algorithm
+	int i, k = 0;
+	int input;
+	int len = strlen(string);
+	int list[STATION_NUM] = { 0, };
+	for (i = 1; i <= STATION_NUM; i++) {
+		if (!strncmp(string, stations[i].name, len))
+			list[k++] = i;
+	}
+	printf("%s(으)로 검색된 역들:\n", string);
+	for (i = 0; i < k; i++)
+		printf("%d.%d호선 %s\n", i + 1, stations[list[i]].line, stations[list[i]].name);
+	scanf("%d", &input);
+	return list[i - 1];
 }
 
 void InitGraph() {
