@@ -14,9 +14,9 @@ typedef struct _station {
 
 int CodeToIndex(char code[]) {
 	if (strncmp(code, "211-", 4) == 0)
-		return 106 + (int)code[5] - '1';
+		return 106 + (int)code[4] - '1';
 	if (strncmp(code, "234-", 4) == 0)
-		return 110 + (int)code[5] - '1';
+		return 110 + (int)code[4] - '1';
 	if (code[0] == '1')
 		return atoi(code) - 99;
 	if (code[0] == '2')
@@ -52,14 +52,6 @@ int Parse(Station stations[]) {
 					&stations[i].line, 
 					&stations[i].name, 
 					&stations[i].spacing);
-				/*
-				printf("%3d: %-6s %d, %-35s, %3.1f\n", 
-					i,
-					stations[i].code,
-					stations[i].line, 
-					stations[i].name, 
-					stations[i].spacing);
-				*/
 			}
 		}
 	}

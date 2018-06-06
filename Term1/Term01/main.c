@@ -13,10 +13,11 @@
 #define _P 80 
 #define ESC 27
 
+//경로를 저장하는 구조체
 typedef struct _path {
-	int num;
-	int path[STATION_NUM + 1];
-	double dist;
+	int num;					//역의 개수
+	int path[STATION_NUM + 1];	//역의 index들을 저장한 배열
+	double dist;				//거리 총합
 }Path;
 
 typedef struct _StationListNode {//즐겨찾기 리스트 노드 구조체
@@ -30,9 +31,9 @@ typedef struct {//즐겨찾기 리스트 구조체
 }StationList;
 
 void InitGraph();
-int choose(int, int[], int[]);
 Path FindPath(int, int);
-void Dijkstra(int, int, int, int[], int[], Path[]);
+int choose(int n, int found[], Path paths[]);
+void Dijkstra(int start, int dest, int n, int found[], Path paths[]);
 int search(char*);
 void insert_node(StationListNode ** phead, StationListNode * p, StationListNode * new_node);
 void remove_node(StationListNode ** phead, StationListNode * p, StationListNode * remove);
@@ -65,10 +66,10 @@ int main(void) {
 
 	Path p;
 	p = FindPath(a, b);//신촌 안암
+	printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
 	for (int i = 0; i < p.num; i++) {
 		printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
 	}
-
 	//-----------------------------------즐겨찾기 기능
 	StationList favorites;
 	InitializeList(&favorites);
@@ -125,15 +126,17 @@ int search(char *string) {
 	for (i = 0; i < k; i++)
 		printf("%d.%d호선 %s\n", i + 1, stations[list[i]].line, stations[list[i]].name);
 	scanf("%d", &input);
-	return list[i - 1];
+	return list[input - 1];
 }
 
 void InitGraph() {
 	int i, j;
+	//그래프를 INF 또는 0으로 초기화
 	for (i = 0; i <= STATION_NUM; i++) {
 		for (j = 0; j <= STATION_NUM; j++)
 			weight[i][j] = i == j ? 0 : INF;
 	}
+	//이전 역까지의 거리이므로 각 호선의 시작역의경우 건너뜀
 	for (i = 1; i <= STATION_NUM; i++) {
 		if (i == 63	||	//2호선 시청
 			i == 106||	//2호선 성수지선 용답
@@ -149,7 +152,7 @@ void InitGraph() {
 		weight[i - 1][i] = stations[i].spacing;
 		weight[i][i - 1] = stations[i].spacing;
 	}
-
+	//특수케이스 간선처리 - 2호선/6호선 순환
 	//2호선 순환
 	weight[105][63] = stations[63].spacing;	//충정로->시청
 	weight[63][105] = stations[63].spacing; //시청->충정로
@@ -169,7 +172,6 @@ void InitGraph() {
 
 Path FindPath(int start, int dest) {
 	static int found[STATION_NUM + 1] = { 0, };
-	static int distance[STATION_NUM + 1] = { 0, };
 	static Path paths[STATION_NUM + 1];
 
 	for (int i = 0; i <= STATION_NUM; i++) {
@@ -179,40 +181,47 @@ Path FindPath(int start, int dest) {
 			paths[i].path[j] = 0;
 		}
 	}
-	Dijkstra(start, dest, STATION_NUM, distance, found, paths);
+	Dijkstra(start, dest, STATION_NUM, found, paths);
 
 	return paths[dest];
 }
-int choose(int n, int distance[], int found[]) {
-	int i, min, minpos;
-	min = INT_MAX;
+int choose(int n, int found[], Path paths[]) {
+	int i, minpos;
+	double min;
+	min = (double)INT_MAX;
 	minpos = -1;
 	for (i = 1; i <= n; i++)
-		if (distance[i] < min && !found[i]) {
-			min = distance[i];
+		if (paths[i].dist < min && !found[i]) {
+			min = paths[i].dist;
 			minpos = i;
 		}
 	return minpos;
 }
-void Dijkstra(int start, int dest, int n, int distance[], int found[], Path paths[]) {
+void Dijkstra(int start, int dest, int n, int found[], Path paths[]) {
 	int i, u, w;
 	for (i = 1; i <= n; i++) {
-		distance[i] = weight[start][i];
+		paths[i].dist = weight[start][i];
 		found[i] = FALSE;
 	}
-	found[start] = TRUE; // 시작 정점 방문 표시
-	distance[start] = 0;
+	
+	//시작역에 대한 경로입력
+	paths[start].path[0] = start;
+	paths[start].num = 1;
 	for (i = 1; i <= n - 2; i++) {
-		u = choose(n, distance, found);
+		u = choose(n, found, paths);
 		found[u] = TRUE;
 		for (w = 1; w <= n; w++)
-			if (!found[w])
-				if (distance[u] + weight[u][w] < distance[w]) {
-					distance[w] = distance[u] + weight[u][w];
-					paths[w] = paths[u];
-					paths[w].path[paths[w].num++] = w;
-					paths[w].dist = distance[w];
+			if (!found[w]) {
+				if (paths[u].dist + weight[u][w] <= paths[w].dist) {	//w까지의 최단거리가 u까지의 최단거리 + u->w 일 경우
+					paths[w] = paths[u];								//u까지의 경로를 그대로 대입합
+					paths[w].path[paths[w].num++] = w;					//경로에 w를 추가함
+					paths[w].dist = paths[u].dist + weight[u][w];		//u까지의 거리에 u->w 거리를 추가함
 				}
+			}
+
+		//도착지에 대한 경로를 찾았을경우
+		if (found[dest])
+			break;
 	}
 }
 
