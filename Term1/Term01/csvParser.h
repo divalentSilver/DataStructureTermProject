@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "transfer.h"
 
 #define STATION_NUM 352
 
@@ -60,7 +61,7 @@ int Parse(Station stations[]) {
 	return 0;
 }
 
-void TransferParse(double weight[STATION_NUM + 1][STATION_NUM + 1], Station stations[]) {
+void TransferParse(double weight[STATION_NUM + 1][STATION_NUM + 1], Station stations[], Transfer transfer[]) {
 	FILE *fp;
 	char string[10];
 	fopen_s(&fp, "transfer.csv", "rb");
@@ -68,13 +69,14 @@ void TransferParse(double weight[STATION_NUM + 1][STATION_NUM + 1], Station stat
 		return;
 	while (!feof(fp)) {
 		int i1, i2;
-		for (int i = 0; i < 93; i++) {
+		for (int i = 0; i < TRANSFER_NUM; i++) {
 			char s1[10];
 			char s2[10];
 			fscanf(fp, "%[^,],%[^\n]\n", s1, s2);
 			i1 = CodeToIndex(s1);
 			i2 = CodeToIndex(s2);
 			weight[i1][i2] = 5.0;
+			transfer[i] = (Transfer) { i1, stations[i1].line, i2, stations[i2].line };
 		}
 		break;
 	}

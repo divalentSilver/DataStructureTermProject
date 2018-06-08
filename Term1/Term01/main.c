@@ -17,7 +17,9 @@
 //경로를 저장하는 구조체
 typedef struct _path {
 	int num;					//역의 개수
-	int path[STATION_NUM + 1];	//역의 index들을 저장한 배열
+	int transfer;				//환승 회수
+
+	int path[STATION_NUM + 1];	//역의 index들을 저장한 배열 (-1: 환승처리)
 	double dist;				//거리 총합
 }Path;
 
@@ -33,8 +35,10 @@ typedef struct {//즐겨찾기 리스트 구조체
 
 void InitGraph();
 Path FindPath(int, int);
+Path FindMinTransfer(int start, int dest);
 int choose(int n, int found[], Path paths[]);
 void Dijkstra(int start, int dest, int n, int found[], Path paths[]);
+void FindLeastTransferPath();
 void FindShortestDistPath();
 void EditFavorites();
 int search(char*);
@@ -48,6 +52,7 @@ void RemoveStation(StationList * list, int position);
 void DisplayList(StationList * list);
 
 Station stations[STATION_NUM + 1];
+Transfer transfer[TRANSFER_NUM];
 double weight[STATION_NUM + 1][STATION_NUM + 1];
 
 int main(void) {
@@ -61,11 +66,14 @@ int main(void) {
 	//------------------------
 	Parse(stations);
 	InitGraph();
-	TransferParse(weight, stations);
+	TransferParse(weight, stations, transfer);
 	InitGUI();
 	DrawTitle();//좀 더 깔끔한 UI로 수정 필요.
 	DrawMain();
-	
+	GetReadyForInput(MENU_WIDTH, 3);
+	//testcode----
+	FindLeastTransferPath();
+	//------------
 	while (1) {
 		int key = 0;
 		if (_kbhit()) {//선택한 메뉴에 따라 함수호출
@@ -112,6 +120,27 @@ void FindShortestDistPath() {
 
 	Path p;
 	p = FindPath(a, b);//신촌 안암
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
+	for (int i = 0; i < p.num; i++) {
+		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
+	}
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("**경로 찾기 완료**");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");//화면 길이 넘어가는거 예외처리 필요
+}
+
+void FindLeastTransferPath() {
+	char str1[100], str2[100];
+	int a, b;
+	printf("출발지를 검색하세요: ");//노선도 보고 찾기 & 즐겨찾는역 보고 찾기 & 검색해서 찾기 기능 세분화 필요
+	scanf("%100s", str1);
+	a = search(str1);
+
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("도착지를 검색하세요: ");
+	scanf("%100s", str2);
+	b = search(str2);
+
+	Path p;
+	p = FindMinTransfer(a, b);//신촌 안암
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
 	for (int i = 0; i < p.num; i++) {
 		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
@@ -243,6 +272,7 @@ Path FindPath(int start, int dest) {
 	for (int i = 0; i <= STATION_NUM; i++) {
 		paths[i].num = 0;
 		paths[i].dist = 0.0;
+		paths[i].transfer = 0;
 		for (int j = 0; j <= STATION_NUM; j++) {
 			paths[i].path[j] = 0;
 		}
@@ -250,6 +280,25 @@ Path FindPath(int start, int dest) {
 	Dijkstra(start, dest, STATION_NUM, found, paths);
 
 	return paths[dest];
+}
+Path FindMinTransfer(int start, int dest) {
+	Path p;
+	p.dist = (double)INT_MAX;
+	int arr[5] = { 0, };
+	int n = FindTransfer(stations[start].line, stations[dest].line, arr, transfer);
+	
+	for (int i = 0; i < n; i++) {
+		Transfer t = transfer[arr[i]];
+		Path p1 = FindPath(start, t.fromIndex);
+		Path p2 = FindPath(t.toIndex, dest);
+		if (p1.dist + p2.dist + 5.0 < p.dist) {
+			p = p1;
+			for (int j = 0; j < p2.num; j++)
+				p.path[p.num++] = p2.path[j];
+			p.dist += 5.0;
+		}
+	}
+	return p;
 }
 int choose(int n, int found[], Path paths[]) {
 	int i, minpos;
@@ -289,6 +338,8 @@ void Dijkstra(int start, int dest, int n, int found[], Path paths[]) {
 		if (found[dest])
 			break;
 	}
+
+	paths[dest].dist += (double)paths[dest].num * 0.5;	//정차시간 보정
 }
 
 void insert_node(StationListNode ** phead, StationListNode * p, StationListNode * new_node) {
