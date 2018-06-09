@@ -5,13 +5,12 @@
 #include "Util.h"
 
 #define INF 10000
-#define _A 65 //키보드 입력값
-#define _a 97
-#define _D 68
-#define _d 100
-#define _p 112
-#define _P 80 
+#define _1 49
+#define _2 50
+#define _3 51
+#define _4 52
 #define ESC 27
+#define ENTER 13
 #define MENU_WIDTH 34
 
 //경로를 저장하는 구조체
@@ -38,9 +37,10 @@ Path FindPath(int, int);
 Path FindMinTransfer(int start, int dest);
 int choose(int n, int found[], Path paths[]);
 void Dijkstra(int start, int dest, int n, int found[], Path paths[]);
+void ShowSubwayMap();
 void FindLeastTransferPath();
 void FindShortestDistPath();
-void EditFavorites();
+int EditFavorites();
 int search(char*);
 void insert_node(StationListNode ** phead, StationListNode * p, StationListNode * new_node);
 void remove_node(StationListNode ** phead, StationListNode * p, StationListNode * remove);
@@ -54,43 +54,71 @@ void DisplayList(StationList * list);
 Station stations[STATION_NUM + 1];
 Transfer transfer[TRANSFER_NUM];
 double weight[STATION_NUM + 1][STATION_NUM + 1];
+StationList favorites;
+
 
 int main(void) {
-	//-------------------------콘솔창 설정
+	//콘솔창 설정-------------------------
 	setcursortype(NOCURSOR);
 	HWND consoleWindow = GetConsoleWindow();
 	SetWindowPos(consoleWindow, 0, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
-	system("mode con cols=200 lines=50");
+	system("mode con cols=190 lines=50");
 	system("title 지하철 어플리케이션");
 	system("color f0");
-	//------------------------
+
+	//Initializing-----------------------
 	Parse(stations);
 	InitGraph();
+	InitializeList(&favorites);
 	TransferParse(weight, stations, transfer);
 	InitGUI();
 	DrawTitle();//좀 더 깔끔한 UI로 수정 필요.
-	DrawMain();
-	GetReadyForInput(MENU_WIDTH, 3);
-	//testcode----
-	FindLeastTransferPath();
-	//------------
+	DrawMainMenu();
+
 	while (1) {
 		int key = 0;
 		if (_kbhit()) {//선택한 메뉴에 따라 함수호출
 			key = _getch();
-			printf("%c", key);
 			switch (key) {
-			case 49://지하철 노선도 보기
+			case _1://지하철 노선도 보기
+				system("cls");
+				DrawMainMenu();
+				printf("%c", key);
+				DrawSubMenu(key);
 				setcursortype(NOCURSOR);
 				ShowSubwayMap();
+				system("cls");
+				DrawMainMenu();
+				setcursortype(NORMALCURSOR);
 				break;
-			case 50://최단 거리 경로 찾기
-				GetReadyForInput(MENU_WIDTH, 3);
+			case _2://최단 거리 경로 찾기
+				system("cls");
+				DrawMainMenu();
+				printf("%c", key);
+				gotoxy(4, 31); printf("Esc: 취소\n");
 				FindShortestDistPath();
+				gotoxy(27, 26); printf(" ");
+				GetReadyForInput(27, 26);
 				break;
-			case 51://즐겨찾는 역 리스트
-				GetReadyForInput(MENU_WIDTH, 3);
+			case _3://최소 환승 경로 찾기
+				system("cls");
+				DrawMainMenu();
+				printf("%c", key);
+				gotoxy(4, 31); printf("Esc: 취소\n");
+				FindLeastTransferPath();
+				gotoxy(27, 26); printf(" ");
+				GetReadyForInput(27, 26);
+				break;
+			case _4://즐겨찾는 역 리스트
+				system("cls");
+				DrawMainMenu();
+				printf("%c", key);
+				DrawSubMenu(key);
 				EditFavorites();
+				system("cls");
+				DrawMainMenu();
+				gotoxy(27, 26); printf(" ");
+				GetReadyForInput(27, 26);
 				break;
 			case ESC://프로그램 종료
 				exit(0);
@@ -98,111 +126,64 @@ int main(void) {
 				break;
 			}
 		}
-		//while (_kbhit()) system("pause");
-		//system("cls");
-		//DrawTitle();
 	}
 
 	system("pause>null");//계속하려면 아무키나 누르시오 없앰
 }
 
-void FindShortestDistPath() {
-	//int arr[20][20];
-	char str1[100], str2[100];
-	int a, b;
-	printf("출발지를 검색하세요: ");//노선도 보고 찾기 & 즐겨찾는역 보고 찾기 & 검색해서 찾기 기능 세분화 필요
-	scanf("%100s", str1);
-	a = search(str1);
-
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("도착지를 검색하세요: ");
-	scanf("%100s", str2);
-	b = search(str2);
-
-	Path p;
-	p = FindPath(a, b);//신촌 안암
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
-	for (int i = 0; i < p.num; i++) {
-		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
-	}
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("**경로 찾기 완료**");
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");//화면 길이 넘어가는거 예외처리 필요
-}
-
-void FindLeastTransferPath() {
-	char str1[100], str2[100];
-	int a, b;
-	printf("출발지를 검색하세요: ");//노선도 보고 찾기 & 즐겨찾는역 보고 찾기 & 검색해서 찾기 기능 세분화 필요
-	scanf("%100s", str1);
-	a = search(str1);
-
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("도착지를 검색하세요: ");
-	scanf("%100s", str2);
-	b = search(str2);
-
-	Path p;
-	p = FindMinTransfer(a, b);//신촌 안암
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
-	for (int i = 0; i < p.num; i++) {
-		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
-	}
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("**경로 찾기 완료**");
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");//화면 길이 넘어가는거 예외처리 필요
-}
-
-void EditFavorites() {
-	StationList favorites;
-	InitializeList(&favorites);
-	int key = 0;
-	char input[100];
-	int target;
-	int position;
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-	printf("A/a: 즐겨찾는 역 추가\n");
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-	printf("D/d: 즐겨찾는 역 삭제\n");
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-	printf("P/p: 즐겨찾기 리스트 출력\n");
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-	printf("Esc: 취소\n");
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-	printf("원하는 기능을 선택하세요: ");
-	while (1) {//추후에 GUI로 버튼 기능 이용하여 구현할 것
+void ShowSubwayMap() {
+	DrawSubwayMap();
+	int key;
+	while (1) {
 		if (_kbhit()) {
 			key = _getch();
 			printf("%c", key);
+			if (key == ESC) break;
+		}
+	}
+}
+
+int SetTargetStation(char message[]) {
+	gotoxy(MENU_WIDTH, 3); printf("<%s 설정하기>\n", message);
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("1. 노선도 보고 입력\n");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("2. 즐겨찾기 리스트 보고 입력\n");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("3. 역명 검색으로 입력\n\n");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%s를 설정하는 방법을 선택하세요: ", message);
+	GetReadyForInput(GetCurrCursorPos().X, GetCurrCursorPos().Y);
+
+	while (1) {
+		int key = 0;
+		if (_kbhit()) {
+			key = _getch();
 			switch (key) {
-			case _A:
-			case _a:
-				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 1);
-				printf("즐겨찾기에 추가할 역을 검색하세요: ");
-				scanf("%100s", input);
-				target = search(input); //예외처리필요
-				printf("%d\n", target);
-				AddStation(&favorites, stations[target]);
-				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-				printf("%s역이 즐겨찾기에 추가되었습니다.\n\n", stations[target].name);
+			case _1:
+				system("cls");
+				DrawMainMenu();
+				setcursortype(NOCURSOR);
+				gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+				ShowSubwayMap();
+				system("cls");
+				DrawMainMenu();
+				gotoxy(MENU_WIDTH, 3); printf("%s를 입력하세요: ", message);
 				break;
-			case _D:
-			case _d:
-				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-				printf("삭제할 역의 번호를 입력하세요: ");
-				scanf("%d", &position);
-				RemoveStation(&favorites, position - 1);
-				break;
-			case _P:
-			case _p:
-				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-				printf("_______즐겨찾기 리스트_______\n");
+			case _2:
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("_______즐겨찾기 리스트_______\n");
 				DisplayList(&favorites);
-				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
-				printf("____________________________\n");
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("____________________________\n\n");
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%s를 입력하세요: ", message);
+				break;
+			case _3:
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("%s를 입력하세요: ", message);
 				break;
 			case ESC:
-				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("즐겨찾기 수정이 완료되었습니다.");
-				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");//화면 길이 넘어가는거 예외처리 필요
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");
+				return key;
+			default:
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("잘못된 입력입니다. 다시 입력해주세요.\n");//이 키 먹는지 확인 요
 				break;
 			}
 		}
+		if (key != 0) break;
 	}
 }
 
@@ -216,12 +197,164 @@ int search(char *string) {
 		if (!strncmp(string, stations[i].name, len))
 			list[k++] = i;
 	}
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%s(으)로 검색된 역들:\n", string);
-	for (i = 0; i < k; i++) {
-		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d.%d호선 %s\n", i + 1, stations[list[i]].line, stations[list[i]].name);
+	while (1) {
+		if (list[0] == 0) {
+			gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("찾는 역이 존재하지 않습니다. 잠시 후 이전으로 돌아갑니다.\n");
+			setcursortype(NOCURSOR);
+			Sleep(2000);
+			return -1;
+		}
+		else {
+			gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%s(으)로 검색된 역들:\n", string);
+			for (i = 0; i < k; i++) {
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d.%d호선 %s\n", i + 1, stations[list[i]].line, stations[list[i]].name);
+			}
+			gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); scanf("%d", &input);
+			if (input < 1 || input > k) {
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("다시 번호를 선택해주세요: ");
+			}
+			else {
+				return list[input - 1];
+			}
+		}
 	}
-	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); scanf("%d", &input);
-	return list[input - 1];
+}
+
+void FindShortestDistPath() {
+	char str1[100], str2[100];
+	int a = 0, b = 0;
+	int key_input;
+	do{
+		if (a == -1) {
+			system("cls");
+			DrawMainMenu();
+			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+		}
+		key_input = SetTargetStation("출발지");
+		if (key_input == ESC) return;
+		scanf("%100s", str1);
+		a = search(str1);
+	} while (a == -1);
+
+	system("cls");
+	DrawMainMenu();
+	printf("2");
+	gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+
+	do {
+		if (b == -1) {
+			system("cls");
+			DrawMainMenu();
+			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+		}
+		key_input = SetTargetStation("도착지");
+		if (key_input == ESC) return;
+		scanf("%100s", str2);
+		b = search(str2);
+	} while (b == -1);
+
+	Path p;
+	p = FindPath(a, b);
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
+	for (int i = 0; i < p.num; i++) {
+		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
+	}
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("**경로 찾기 완료**");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");
+}
+
+void FindLeastTransferPath() {
+	char str1[100], str2[100];
+	int a = 0, b = 0;
+	int key_input;
+	do {
+		if (a == -1) {
+			system("cls");
+			DrawMainMenu();
+			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+		}
+		key_input = SetTargetStation("출발지");
+		if (key_input == ESC) return;
+		scanf("%100s", str1);
+		a = search(str1);
+	} while (a == -1);
+
+	system("cls");
+	DrawMainMenu();
+	printf("2");
+	gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+
+	do {
+		if (b == -1) {
+			system("cls");
+			DrawMainMenu();
+			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+		}
+		key_input = SetTargetStation("도착지");
+		if (key_input == ESC) return;
+		scanf("%100s", str2);
+		b = search(str2);
+	} while (b == -1);
+
+	Path p;
+	p = FindMinTransfer(a, b);
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
+	for (int i = 0; i < p.num; i++) {
+		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
+	}
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("**경로 찾기 완료**");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");
+}
+
+int EditFavorites() {
+	int key = 0;
+	char input[100];
+	int target;
+	int position;
+	while (1) {
+		if (_kbhit()) {
+			key = _getch();
+			printf("%c", key);
+			system("cls");
+			DrawMainMenu();
+			DrawSubMenu(_4);
+			switch (key) {
+			case _1:
+				gotoxy(MENU_WIDTH, 3);
+				printf("즐겨찾기에 추가할 역을 검색하세요: ");
+				scanf("%100s", input);
+				target = search(input); //예외처리필요
+				AddStation(&favorites, stations[target]);
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
+				printf("%s역이 즐겨찾기에 추가되었습니다.\n\n", stations[target].name);
+				gotoxy(27, 36); printf(" "); gotoxy(27, 36);
+				break;
+			case _2:
+				gotoxy(MENU_WIDTH, 3);
+				printf("_______즐겨찾기 리스트_______\n");
+				DisplayList(&favorites);
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
+				printf("____________________________\n");
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("삭제할 역의 번호를 입력하세요: ");
+				scanf("%d", &position);
+				RemoveStation(&favorites, position - 1);
+				gotoxy(27, 36); printf(" "); gotoxy(27, 36);
+				break;
+			case _3:
+				gotoxy(MENU_WIDTH, 3);
+				printf("_______즐겨찾기 리스트_______\n");
+				DisplayList(&favorites);
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
+				printf("____________________________\n");
+				gotoxy(27, 36); printf(" "); gotoxy(27, 36);
+				break;
+			case ESC:
+				gotoxy(MENU_WIDTH, 3); printf("즐겨찾기 수정이 완료되었습니다.");
+				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");//화면 길이 넘어가는거 예외처리 필요
+				return;
+			}
+		}
+	}
 }
 
 void InitGraph() {

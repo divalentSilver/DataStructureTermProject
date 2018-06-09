@@ -3,6 +3,13 @@
 #include <conio.h>
 #include <Windows.h>
 
+#define _1 49
+#define _2 50
+#define _3 51
+#define _4 52
+#define ESC 27
+#define MENU_WIDTH 34
+
 char *string[] = { "①","②","③","④","⑤","⑥","⑦","⑧" };
 int color[] = { 1,10,14,11,5,4,2,13 };
 
@@ -10,9 +17,9 @@ void gotoxy(int, int);
 void InitGUI();
 int Title();
 void PrintLineMark(int);
-void ShowSubwayMap();
+void DrawSubwayMap();
 void DrawTitle();
-void DrawMain();
+void DrawMainMenu();
 void GetReadyForInput(int, int);
 
 HANDLE hConsole;
@@ -59,7 +66,7 @@ void InitGUI() {
 	SetConsoleCursorInfo(hConsole, &info);
 }
 
-void ShowSubwayMap() {
+void DrawSubwayMap() {
 	HINSTANCE hinstance = GetModuleHandle(NULL);
 	HWND hWnd = GetConsoleWindow();
 	HBITMAP hImage, hOldBitmap;
@@ -77,29 +84,30 @@ void ShowSubwayMap() {
 	ReleaseDC(hWnd, hdc);
 }
 
+
 int Title() {
 	int choice = 1;
 	COORD cursor = { 12, 6 };
 	unsigned char in;
 	system("cls");
 	gotoxy(10, 5);
-	printf("□□□□□□□□□□□□□");
+	printf("▒▒▒▒▒▒▒▒▒▒▒▒▒");
 	gotoxy(10, 6);
-	printf("□   지하철 경로 찾기   □");
+	printf("▒   지하철 경로 찾기   ▒");
 	gotoxy(10, 7);
-	printf("□□□□□□□□□□□□□");
+	printf("▒▒▒▒▒▒▒▒▒▒▒▒▒");
 	gotoxy(10, 9);
-	printf("□□□□□□□□□□□□□");
+	printf("▒▒▒▒▒▒▒▒▒▒▒▒▒");
 	gotoxy(10, 10);
-	printf("□                      □");
+	printf("▒                      ▒");
 	gotoxy(10, 11);
-	printf("□□□□□□□□□□□□□");
+	printf("▒▒▒▒▒▒▒▒▒▒▒▒▒");
 	gotoxy(10, 13);
-	printf("□□□□□□□□□□□□□");
+	printf("▒▒▒▒▒▒▒▒▒▒▒▒▒");
 	gotoxy(10, 14);
-	printf("□                      □");
+	printf("▒                      ▒");
 	gotoxy(10, 15);
-	printf("□□□□□□□□□□□□□");
+	printf("▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
 	gotoxy(cursor.X, cursor.Y);
 	printf("▶");
@@ -163,50 +171,86 @@ void DrawTitle() {
 	while (_kbhit()) _getch();
 }
 
-void DrawMain() {//수정 필요
+void DrawMainMenu() {//수정 필요
 	system("cls");
 	int x = 0;
 	int y = 0;
 
 	//menu bar
-	gotoxy(x, y + 0); printf("□□□□□□□□□□□□□□□□");
+	gotoxy(x, y + 0); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 	for (int i = 1; i <= 5; i++) {
-		gotoxy(x, y + i); printf("□                            □");
+		gotoxy(x, y + i); printf("▒                            ▒");
 	}
-	gotoxy(x, y + 3); printf("□          M E N U           □");
-	gotoxy(x, y + 6); printf("□□□□□□□□□□□□□□□□");
+	gotoxy(x, y + 3); printf("▒          M E N U           ▒");
+	gotoxy(x, y + 6); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
 	y = 6;
 	for (int i = 1; i <= 3; i++) {
-		gotoxy(x, y + i); printf("□                            □");
+		gotoxy(x, y + i); printf("▒                            ▒");
 	}
-	gotoxy(x, y + 2); printf("□   1. 지하철 노선도 보기    □");
-	gotoxy(x, y + 4); printf("□□□□□□□□□□□□□□□□");
+	gotoxy(x, y + 2); printf("▒   1. 지하철 노선도 보기    ▒");
+	gotoxy(x, y + 4); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
 	y = 10;
 	for (int i = 1; i <= 3; i++) {
-		gotoxy(x, y + i); printf("□                            □");
+		gotoxy(x, y + i); printf("▒                            ▒");
 	}
-	gotoxy(x, y + 2); printf("□   2. 최단 거리 경로 찾기   □");
-	gotoxy(x, y + 4); printf("□□□□□□□□□□□□□□□□");
+	gotoxy(x, y + 2); printf("▒   2. 최단 거리 경로 찾기   ▒");
+	gotoxy(x, y + 4); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
 	y = 14;
 	for (int i = 1; i <= 3; i++) {
-		gotoxy(x, y + i); printf("□                            □");
+		gotoxy(x, y + i); printf("▒                            ▒");
 	}
-	gotoxy(x, y + 2); printf("□   3. 즐겨찾는 역 리스트    □");
-	gotoxy(x, y + 4); printf("□□□□□□□□□□□□□□□□");
+	gotoxy(x, y + 2); printf("▒   3. 최소 환승 경로 찾기   ▒");
+	gotoxy(x, y + 4); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
-	y = 20;
-	gotoxy(x, y + 0); printf("□□□□□□□□□□□□□□□□");
-	for (int i = 1; i <= 23; i++) {
-		gotoxy(x, y + i); printf("□                            □");
+	y = 18;
+	for (int i = 1; i <= 3; i++) {
+		gotoxy(x, y + i); printf("▒                            ▒");
 	}
-	gotoxy(x, y + 2); printf("□  원하는 기능 번호 입력:    □");
-	gotoxy(x, y + 24); printf("□□□□□□□□□□□□□□□□");
+	gotoxy(x, y + 2); printf("▒   4. 즐겨찾는 역 리스트    ▒");
+	gotoxy(x, y + 4); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
+
+	y = 24;
+	gotoxy(x, y + 0); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
+	for (int i = 1; i <= 23; i++) {
+		gotoxy(x, y + i); printf("▒                            ▒");
+	}
+	gotoxy(x, y + 2); printf("▒  원하는 메뉴 번호 입력:    ▒");
+	gotoxy(x, y + 3); printf("▒____________________________▒");
+	gotoxy(x, y + 24); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
 	GetReadyForInput(x + 27, y + 2);
 
+}
+
+void DrawSubMenu(int key) {
+	int x = 4;
+	int y = 29;
+	gotoxy(x, y + 0); printf("<%c번 메뉴의 부가 기능>", key);
+	switch (key) {
+	case _1://지하철 노선도 보기
+		gotoxy(x, y + 2); printf("Esc: 취소\n");
+		//gotoxy(x, y + 4); printf("원하는 기능 번호 입력: ");
+		//GetReadyForInput(x + 23, y + 4);
+		break;
+	case _2://최단 거리 경로 찾기
+		//커서 지나가면 그림 지워지는 문제로 따로 처리함
+		break;
+	case _3://최소 환승 경로 찾기
+		//커서 지나가면 그림 지워지는 문제로 따로 처리함
+		break;
+	case _4://즐겨찾는 역 리스트
+		gotoxy(x, y + 2); printf("1. 즐겨찾는 역 추가\n");
+		gotoxy(x, y + 3); printf("2. 즐겨찾는 역 삭제\n");
+		gotoxy(x, y + 4); printf("3. 즐겨찾기 리스트 출력\n");
+		gotoxy(x, y + 5); printf("Esc: 취소\n");
+		gotoxy(x, y + 7); printf("원하는 기능 번호 입력: ");
+		break;
+	default:
+		break;
+	}
 }
 
 void GetReadyForInput(int x, int y) {
