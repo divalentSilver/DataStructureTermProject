@@ -20,7 +20,10 @@ void PrintLineMark(int);
 void DrawSubwayMap();
 void DrawTitle();
 void DrawMainMenu();
+void DrawSubMenu(int key);
 void GetReadyForInput(int, int);
+COORD GetCurrCursorPos();
+void setcursortype(CURSOR_TYPE);
 
 HANDLE hConsole;
 
