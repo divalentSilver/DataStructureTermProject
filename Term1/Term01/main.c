@@ -239,8 +239,19 @@ void FindShortestDistPath() {
 		}
 		key_input = SetTargetStation("Ãâ¹ßÁö");
 		if (key_input == ESC) return;
-		scanf("%100s", str1);
-		a = search(str1);
+		/*
+		else if (key_input == 2) {
+			StationListNode* tmp;
+			scanf("%d", a);
+			tmp = get_node_at(&favorites, a - 1);
+			printf("%d", (tmp->station).code);
+			a = (tmp->station).code;
+		}
+		*/
+		else {
+			scanf("%100s", str1);
+			a = search(str1);
+		}
 	} while (a == -1);
 
 	system("cls");
