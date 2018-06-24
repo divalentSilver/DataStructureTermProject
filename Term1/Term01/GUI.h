@@ -216,8 +216,15 @@ void DrawMainMenu() {//수정 필요
 	}
 	gotoxy(x, y + 2); printf("▒   4. 즐겨찾는 역 리스트    ▒");
 	gotoxy(x, y + 4); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
+	
+	y = 22;
+	for (int i = 1; i <= 3; i++) {
+		gotoxy(x, y + i); printf("▒                            ▒");
+	}
+	gotoxy(x, y + 2); printf("▒   5. 미니게임              ▒");
+	gotoxy(x, y + 4); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
-	y = 24;
+	y = 28;
 	gotoxy(x, y + 0); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 	for (int i = 1; i <= 23; i++) {
 		gotoxy(x, y + i); printf("▒                            ▒");
@@ -232,7 +239,7 @@ void DrawMainMenu() {//수정 필요
 
 void DrawSubMenu(int key) {
 	int x = 4;
-	int y = 29;
+	int y = 33;
 	gotoxy(x, y + 0); printf("<%c번 메뉴의 부가 기능>", key);
 	switch (key) {
 	case _1://지하철 노선도 보기
@@ -264,10 +271,7 @@ void GetReadyForInput(int x, int y) {
 }
 
 void PrintLineMark(int line) {
-	for (int k = 0; k < 8; k++) {
-		gotoxy(10, k * 2);
-		SetConsoleTextAttribute(hConsole, color[k]);
-		printf("%s", string[k]);
-		SetConsoleTextAttribute(hConsole, 7); 
-	}
+	SetConsoleTextAttribute(hConsole, 240 + color[line - 1]);
+	printf("%s", string[line - 1]);
+	SetConsoleTextAttribute(hConsole, 240);
 }

@@ -17,6 +17,8 @@ int isTransfer(int from, int to, Transfer transfer[]) {
 }
 int FindTransfer(int from, int to, int arr[], Transfer transfer[]) {
 	int n = 0;
+	if (from == to)
+		return -1;
 	for(int i = 0; i < TRANSFER_NUM; i++)
 		if (from == transfer[i].fromLine && to == transfer[i].toLine) {
 			arr[n++] = i;

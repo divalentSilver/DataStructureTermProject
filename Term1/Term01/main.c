@@ -9,6 +9,7 @@
 #define _2 50
 #define _3 51
 #define _4 52
+#define _5 53
 #define ESC 27
 #define ENTER 13
 #define MENU_WIDTH 34
@@ -51,7 +52,7 @@ void InitializeList(StationList * list);
 void AddStation(StationList * list, Station station);
 void RemoveStation(StationList * list, int position);
 void DisplayList(StationList * list);
-
+void Minigame();
 Station stations[STATION_NUM + 1];
 Transfer transfer[TRANSFER_NUM];
 double weight[STATION_NUM + 1][STATION_NUM + 1];
@@ -68,6 +69,7 @@ int main(void) {
 	system("color f0");
 
 	//Initializing-----------------------
+	//srand(time(NULL));
 	Parse(stations);
 	InitGraph();
 	InitializeList(&favorites);
@@ -98,8 +100,8 @@ int main(void) {
 				printf("%c", key);
 				gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
 				FindShortestDistPath();
-				gotoxy(27, 26); printf(" ");
-				GetReadyForInput(27, 26);
+				gotoxy(27, 30); printf(" ");
+				GetReadyForInput(27, 30);
 				break;
 			case _3://최소 환승 경로 찾기
 				system("cls");
@@ -107,8 +109,8 @@ int main(void) {
 				printf("%c", key);
 				gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
 				FindLeastTransferPath();
-				gotoxy(27, 26); printf(" ");
-				GetReadyForInput(27, 26);
+				gotoxy(27, 30); printf(" ");
+				GetReadyForInput(27, 30);
 				break;
 			case _4://즐겨찾는 역 리스트
 				system("cls");
@@ -118,8 +120,18 @@ int main(void) {
 				EditFavorites();
 				system("cls");
 				DrawMainMenu();
-				gotoxy(27, 26); printf(" ");
-				GetReadyForInput(27, 26);
+				gotoxy(27, 30); printf(" ");
+				GetReadyForInput(27, 30);
+				break;
+			case _5:
+				system("cls");
+				DrawMainMenu();
+				printf("%c", key);
+				Minigame();
+				system("cls");
+				DrawMainMenu();
+				gotoxy(27, 30); printf(" ");
+				GetReadyForInput(27, 30);
 				break;
 			case ESC://프로그램 종료
 				exit(0);
@@ -144,6 +156,30 @@ void ShowSubwayMap() {
 	}
 }
 
+void Minigame() {
+	int start = rand() % STATION_NUM;
+	int dest = rand() % STATION_NUM;
+
+	gotoxy(MENU_WIDTH, 3);				      printf("┌───────── [지하철 미니게임]─────────┐\n");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("│        최단경로를 찾으세요!        │\n");
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("│ 출발역: %d호선 %-20s │\n", stations[start].line, stations[start].name);
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("│ 도착역: %d호선 %-20s │\n", stations[dest].line, stations[dest].name);
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("└────────────────────────────────────┘\n\n");
+	Path p = FindPath(start, dest);
+	for (int i = 0; i < p.num; i++) {
+		char string[100];
+		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);		PrintLineMark(stations[p.path[i]].line); printf("호선 : ");
+		scanf("%100s", string);
+		if (strcmp(string, stations[p.path[i]].name)) {
+			gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);	printf("틀렸습니다! 정답은 %s 입니다.\n", stations[p.path[i]].name);
+			if (_kbhit()) { getch(); getch(); }
+			return;
+		}
+	}
+	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("축하드립니다!\n");
+	if (_kbhit()) { getch(); getch(); }
+}
+
 int SetTargetStation(char message[]) {
 	gotoxy(MENU_WIDTH, 3);				      printf("┌────── [%s 설정하기]──────┐\n", message);
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("│                              │\n");
@@ -153,7 +189,7 @@ int SetTargetStation(char message[]) {
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("└──────────────────────────────┘\n\n");
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%s를 설정하는 방법을 선택하세요: ", message);
 	GetReadyForInput(GetCurrCursorPos().X, GetCurrCursorPos().Y);
-
+	getch();
 	while (1) {
 		int key = 0;
 		if (_kbhit()) {
@@ -163,7 +199,7 @@ int SetTargetStation(char message[]) {
 				system("cls");
 				DrawMainMenu();
 				setcursortype(NOCURSOR);
-				gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+				gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 				ShowSubwayMap();
 				system("cls");
 				DrawMainMenu();
@@ -257,13 +293,13 @@ void FindShortestDistPath() {
 	system("cls");
 	DrawMainMenu();
 	printf("2");
-	gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+	gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 
 	do {
 		if (b == -1) {
 			system("cls");
 			DrawMainMenu();
-			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+			gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 		}
 		key_input = SetTargetStation("도착지");
 		if (key_input == ESC) return;
@@ -276,7 +312,7 @@ void FindShortestDistPath() {
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("-----------------------------------\n");
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
 	for (int i = 0; i < p.num; i++) {
-		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
+		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); PrintLineMark(stations[p.path[i]].line); printf("호선 %s\n",stations[p.path[i]].name);
 	}
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("**경로 찾기 완료**");
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");
@@ -320,7 +356,7 @@ void FindLeastTransferPath() {
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("-----------------------------------\n");
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("총 %d개의 역, %lf 분 소요\n", p.num, p.dist);
 	for (int i = 0; i < p.num; i++) {
-		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("%d호선 %s\n", stations[p.path[i]].line, stations[p.path[i]].name);
+		gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); PrintLineMark(stations[p.path[i]].line); printf("호선 %s\n", stations[p.path[i]].name);
 	}
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y); printf("**경로 찾기 완료**");
 	gotoxy(MENU_WIDTH, GetCurrCursorPos().Y + 2); printf("<- 메뉴를 선택해주세요");
@@ -347,6 +383,7 @@ int EditFavorites() {
 				AddStation(&favorites, stations[target]);
 				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
 				printf("%s역이 즐겨찾기에 추가되었습니다.\n\n", stations[target].name);
+				Sleep(500);
 				gotoxy(27, 36); printf(" "); gotoxy(27, 36);
 				break;
 			case _2:
@@ -366,6 +403,7 @@ int EditFavorites() {
 				DisplayList(&favorites);
 				gotoxy(MENU_WIDTH, GetCurrCursorPos().Y);
 				printf("____________________________\n");
+				Sleep(3000);
 				gotoxy(27, 36); printf(" "); gotoxy(27, 36);
 				break;
 			case ESC:
@@ -439,7 +477,8 @@ Path FindMinTransfer(int start, int dest) {
 	p.dist = (double)INT_MAX;
 	int arr[5] = { 0, };
 	int n = FindTransfer(stations[start].line, stations[dest].line, arr, transfer);
-	
+	if (n == -1)
+		return FindPath(start, dest);
 	for (int i = 0; i < n; i++) {
 		Transfer t = transfer[arr[i]];
 		Path p1 = FindPath(start, t.fromIndex);
