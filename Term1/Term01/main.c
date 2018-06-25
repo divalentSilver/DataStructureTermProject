@@ -98,7 +98,7 @@ int main(void) {
 				system("cls");
 				DrawMainMenu();
 				printf("%c", key);
-				gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+				gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 				FindShortestDistPath();
 				gotoxy(27, 30); printf(" ");
 				GetReadyForInput(27, 30);
@@ -107,7 +107,7 @@ int main(void) {
 				system("cls");
 				DrawMainMenu();
 				printf("%c", key);
-				gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+				gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 				FindLeastTransferPath();
 				gotoxy(27, 30); printf(" ");
 				GetReadyForInput(27, 30);
@@ -271,7 +271,7 @@ void FindShortestDistPath() {
 		if (a == -1) {
 			system("cls");
 			DrawMainMenu();
-			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+			gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 		}
 		key_input = SetTargetStation("출발지");
 		if (key_input == ESC) return;
@@ -326,7 +326,7 @@ void FindLeastTransferPath() {
 		if (a == -1) {
 			system("cls");
 			DrawMainMenu();
-			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+			gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 		}
 		key_input = SetTargetStation("출발지");
 		if (key_input == ESC) return;
@@ -337,13 +337,13 @@ void FindLeastTransferPath() {
 	system("cls");
 	DrawMainMenu();
 	printf("2");
-	gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+	gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 
 	do {
 		if (b == -1) {
 			system("cls");
 			DrawMainMenu();
-			gotoxy(3, 31); printf("뒤로가려면 Esc를 누르세요.");
+			gotoxy(3, 35); printf("뒤로가려면 Esc를 누르세요.");
 		}
 		key_input = SetTargetStation("도착지");
 		if (key_input == ESC) return;

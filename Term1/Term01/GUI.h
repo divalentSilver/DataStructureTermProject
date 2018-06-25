@@ -226,12 +226,12 @@ void DrawMainMenu() {//수정 필요
 
 	y = 28;
 	gotoxy(x, y + 0); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
-	for (int i = 1; i <= 23; i++) {
+	for (int i = 1; i <= 21; i++) {
 		gotoxy(x, y + i); printf("▒                            ▒");
 	}
 	gotoxy(x, y + 2); printf("▒  원하는 메뉴 번호 입력:    ▒");
 	gotoxy(x, y + 3); printf("▒____________________________▒");
-	gotoxy(x, y + 24); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
+	gotoxy(x, y + 22); printf("▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒");
 
 	GetReadyForInput(x + 27, y + 2);
 
